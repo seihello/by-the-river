@@ -24,35 +24,61 @@ export default function Home() {
     x: 400,
     y: 200,
   });
-  // const [timer, setTimer] = useState<NodeJS.Timeout | null>();
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>();
   const [movingDirection, setMovingDirection] = useState<Direction>(
     Direction.None,
   );
 
-  const onKeyDown = useCallback((e: KeyboardEvent) => {
-    console.log("e.repeat", e.repeat);
-
-    if (e.repeat) return;
-
-    const newTimer = setInterval(() => {
-      switch (e.key) {
-        case "ArrowUp":
-          setPosition((prev) => ({ ...prev, y: prev.y - SPEED }));
-          break;
-        case "ArrowDown":
-          setPosition((prev) => ({ ...prev, y: prev.y + SPEED }));
-          break;
-        case "ArrowRight":
-          setPosition((prev) => ({ ...prev, x: prev.x + SPEED }));
-          break;
-        case "ArrowLeft":
-          setPosition((prev) => ({ ...prev, x: prev.x - SPEED }));
-          break;
+  useEffect(() => {
+    if (timer) {
+      if (movingDirection === Direction.None) {
+        clearInterval(timer);
+        setTimer(null);
       }
-    }, 50);
+    } else {
+      if (movingDirection !== Direction.None) {
+        const newTimer = setInterval(() => {
+          switch (movingDirection) {
+            case Direction.Up:
+              setPosition((prev) => ({ ...prev, y: prev.y - SPEED }));
+              break;
+            case Direction.Down:
+              setPosition((prev) => ({ ...prev, y: prev.y + SPEED }));
+              break;
+            case Direction.Right:
+              setPosition((prev) => ({ ...prev, x: prev.x + SPEED }));
+              break;
+            case Direction.Left:
+              setPosition((prev) => ({ ...prev, x: prev.x - SPEED }));
+              break;
+          }
+        }, 50);
+        setTimer(newTimer);
+      }
+    }
+  }, [timer, movingDirection]);
+
+  const onKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.repeat) return;
+    console.log("onKeyDown");
+
+    switch (e.key) {
+      case "ArrowUp":
+        setMovingDirection(Direction.Up);
+        break;
+      case "ArrowDown":
+        setMovingDirection(Direction.Down);
+        break;
+      case "ArrowRight":
+        setMovingDirection(Direction.Right);
+        break;
+      case "ArrowLeft":
+        setMovingDirection(Direction.Left);
+        break;
+    }
 
     document.addEventListener("keyup", () => {
-      clearInterval(newTimer);
+      setMovingDirection(Direction.None);
     });
   }, []);
 
